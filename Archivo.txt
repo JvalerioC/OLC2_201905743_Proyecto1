@@ -1,0 +1,150 @@
+//Se imprime el encabezado, estas son expresiones
+//println!(7 - (5 + 10 * (2 + 4 * (5 + 2 * 3)) - 8 * 3 * 3) + 50 * (6 * 2));
+//println!(false || false);
+//println!(4==4);
+//println!(-25);
+println!("Hola Mundo");
+//println!(i64::pow( 5 , 5));
+//println!(f64::powf( 3.0 , 3.0));
+
+let mut a = 5+6*4-7; //nose 22
+let mut b: f64 = 4.4;
+let c = "Hola";
+let d: bool = true;
+let mut e: String = "Hola";
+let mut f: &str = "mundo";
+
+a = 26;
+//c = "Boleano";
+println!("imprime {} pero no es oficial {} {}", 'b', c, a);
+
+if a == 26{
+    println!("entro al if");
+    println!("{}", b);
+    let b = 'b';
+}else if a ==2{
+    println!("entro al elif");
+}else{
+    println!("entro al else");
+}
+
+let mut var1 = 0;
+while var1 < 10 {
+    println!("{}", var1); // imprime 0123456789
+    var1 = var1 + 1;
+}
+
+let mut x = 5; // mut x: i64
+let mut completado = false;
+while !completado {
+    x = x - 3;
+    println!("{}", x); // imprime 2-1-4-7-10
+    if x % 5 == 0 {
+        completado = true;
+    }
+}
+while true {
+    println!("true"); // Imprime solamente una vez true
+    break;
+}
+
+let mut num = 0;
+while num < 10 {
+    num = num + 1;
+    if num == 5 {
+        continue;
+    }
+    println!("{}", num); // Imprime 1234678910
+}
+
+let mut cont1 = 0;
+loop {
+    cont1 = cont1 + 1;
+    println!("{}", cont1);
+    if cont1 == 10 {
+        break;
+    }
+}
+
+let mut cont = 0;
+let result = loop {
+    cont = cont + 1;
+    println!("{}", cont);
+    if cont == 10 {
+        break cont*2;
+    }
+};
+
+let n = 10;
+let operacion =
+if n < 10 {
+    10 * n // Esta expresión devuelve un 'i64'
+} else if n > 10 {
+2 * n // Esta expresión devuelve un 'i64'
+} else {
+n / 2 // Esta expresión debe devolver un 'i64' también
+};
+
+
+fn suma (a:i64, b:i64){
+    let c = a + b;
+    println!("{}", c);
+}
+
+fn main(){
+    println!("hola mundo");
+}
+
+fn resta(a:i64, b:i64) -> i64 {
+    let c = a - b;
+    println!("{}", c);
+}
+
+fn multiplicacion(a:i64, b:i64) -> i64 {
+    let c = a * b;
+    println!("{}", c);
+}
+
+struct Personaje {
+    nombre: String,
+    edad: i64,
+    descripcion: String
+}
+// Struct
+struct Carro {
+    placa: String,
+    color: String,
+    tipo: String
+}
+
+
+
+let mut f: &str = "mundo";
+let mut vector = vec![1,2,3,4,5];
+let mut v = vec![0; 10];
+
+let v1: Vec<i64> = Vec::new();
+let mut v2: Vec<&str> = Vec::new();
+let v3: Vec<i64> = Vec::with_capacity(10);
+let mut v4: Vec<char> = Vec::with_capacity(10);
+
+let mut arr3: [[[i64; 4];2]; 2] = [
+    [ [ 1, 3, 5, 7], [ 9, 11, 13, 15] ],
+    [ [ 2, 4, 6, 8], [10, 12, 14, 16] ]
+];
+
+let mut arr1: [&str; 2] = ["Hola", "Mundo"];
+
+let mut arr2 = [
+    [ [ 1, 3, 5, 7], [ 5;4 ] ],
+    [ [ 2, 4, 6, 8], [ 10;4 ] ],
+    [ [ 2; 4 ], [ 0; 4 ] ]
+];
+
+arr3[0][1][3] = 50;
+arr2[0][0][0] = 45;
+arr1[1] = "Juanito";
+
+let mut c = arr3[0][1];
+println!("{}", arr3[1][1][2]);
+println!("{:?}", arr3[1][1]);
