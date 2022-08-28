@@ -18,7 +18,7 @@ tf = TablaF()
 tstruct = TablaStruct()
 tm = TablaModulos()
 
-f = open("./entrada.txt", "r")
+f = open("./entrada.txt", "r", encoding="utf-8")
 input = f.read()
 f.close()
 #print(input)
@@ -40,11 +40,9 @@ print("structs globales............",len(data.structs.structs))
 print("modulos globales............", len(data.modulos.modulos))
 
 
-
-
 print(data.consola.cadena)
 
 #print (len(data.ambito.pila[1].simbolos))
-#data.ambito.pila[1].generarHTML()
+#data.ambito.pila[2].generarHTML()
 #data.ambito.pila[0].generarHTML()
-#data.errores.generarHTML()
+data.errores.generarHTML()

@@ -11,7 +11,7 @@ def logica(r1, r2, op, fila, columna, data):
         res.linea = fila
         res.columna = columna
         return res
-    if(tipo1 == tipo2 and tipo1 == "bool"):
+    if(tipo1 == tipo2 and tipo1 == "BOOL"):
         res.tipo = tipo1
         res.linea = fila
         res.columna = columna

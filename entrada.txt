@@ -1,13 +1,55 @@
-fn main(){
-    let mut v = vec![2,4,6,8,10];
-    let mut v1: Vec<&str> = Vec::new();
+fn intercambiar(a: &mut [i64], i: i64, j: i64) {
+    let aux: i64 = a[i];
+    a[i] = a[j];
+    a[j] = aux;
+}
 
-    v.insert(2, 5);
-    println!("{:?}", v);
-    v.push(12);
-    println!("{:?}", v);
-    v.remove(0);
-    println!("{:?}", v);
+fn ordIntercambio(arr: &mut [i64]) {
+    let mut i = 0;
+    let mut j = 0;
+    
+    while i < (arr.len() - 1) {
+        j = i + 1;
+        while j < arr.len() {
+            if arr[i] > arr[j] {
+                intercambiar(&mut arr, i, j);
+            }
+            j = j + 1;
+        }
+        i = i + 1;
+    }
+}
 
+fn main () {
+    let vector = vec!["Este", "semestre", "si", "sale"];
+for valor in vector {
+println!("{}", valor);
+}
+// Ejemplo 2 - Es aplicable para arreglos o vectores
+let arreglo = vec!["Este", "semestre", "si", "sale"];
+for valor in 0..arreglo.len() {
+println!("{}", arreglo[valor]);
+}
+// Ejemplo 3
+for n in 1..4 { // Recorre rango de 1:4
+println!("{} ", n); // Únicamente se recorre ascendentemente
+} // Imprime 1 2 3
+println!("");
+// Ejemplo 3 - cadena
+for letra in "Hola Mundo!".chars() { // Recorre las letras de la cadena
+println!("{} -", letra); // Imprime H-o-l-a- -M-u-n-d-o-!-
+}
+println!("");
+// Ejemplo 4 - variable cadena
+let cadena = "OLC2";
+for letra in cadena.chars() {
+println!("{} -", letra); // Imprime O-L-C-2-
+}
+println!("");
+// Ejemplo 5 - Es aplicable para arreglos o vectores
+for letra in ["perro", "gato", "tortuga"] {
+println!("{} es mi favorito, ", letra);
+//Imprime: perro es mi favorito, gato es mi favorito, tortuga es mi favorito,
+}
 
 }

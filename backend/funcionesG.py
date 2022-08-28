@@ -13,6 +13,7 @@ class Parametro():
         self.tipo = tipo
         self.id = id
         self.valor = 0
+        self.isReferencia = False
 
 class TablaF():
     def __init__(self):

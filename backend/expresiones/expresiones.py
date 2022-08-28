@@ -1,3 +1,4 @@
+from ast import Expr
 from enum import Enum
 
 class OPERACION_ARITMETICA(Enum) :
@@ -96,3 +97,35 @@ class ExpresionCapacity(Expresion):
     #clase para la expresion contains (vector)
     def __init__(self, id):
         self.id = id
+
+class ExpresionLlamada(Expresion):
+    #clase para la expresion llamada a funcion
+    def __init__(self, id, parametros):
+        self.id = id
+        self.parametros = parametros
+
+class ExpresionAbsoluto(Expresion):
+    #clase para la expresion de valor absoluto
+    def __init__(self, expresion):
+        self.expresion = expresion
+
+class ExpresionRaiz(Expresion):
+    #clase para la expresion de valor absoluto
+    def __init__(self, expresion):
+        self.expresion = expresion
+
+class ExpresionToString(Expresion):
+    #clase para la expresion de valor absoluto
+    def __init__(self, expresion):
+        self.expresion = expresion
+
+class ExpresionClone(Expresion):
+    #clase para la expresion de valor absoluto
+    def __init__(self, id):
+        self.id = id
+
+class ExpresionCasteo(Expresion):
+    #clase para la expresion casteo
+    def __init__(self, expresion, tipo):
+        self.expresion = expresion
+        self.tipo = tipo

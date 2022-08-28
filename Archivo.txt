@@ -14,7 +14,7 @@ let d: bool = true;
 let mut e: String = "Hola";
 let mut f: &str = "mundo";
 
-a = 26;
+let mut a = 26;
 //c = "Boleano";
 println!("imprime {} pero no es oficial {} {}", 'b', c, a);
 
@@ -86,13 +86,48 @@ n / 2 // Esta expresión debe devolver un 'i64' también
 };
 
 
-fn suma (a:i64, b:i64){
+fn suma (a:i64, b:i64)-> i64{
     let c = a + b;
     println!("{}", c);
+    if c == 9 {
+        return ;
+    }
+
+    println!("{}", d);
+    let mut d = 15;
+    println!("{}", d);
 }
 
 fn main(){
-    println!("hola mundo");
+    let mut v = vec![2,4,6,8,10];
+    let mut v1: Vec<&str> = Vec::new();
+
+    v.insert(2, 5);
+    println!("{:?}", v);
+    v.push(12);
+    println!("{:?}", v);
+    v.remove(0);
+    println!("{:?}", v);
+
+    println!("{}", v.len());
+    println!("{}", v.contains(&2));
+
+    let mut c = v.remove(3);
+    println!("{}", c);
+    println!("{:?}", v);
+
+    let mut d1 = v.capacity();
+    println!("{} aqui termina el main", d1);
+    let a = suma(8, 22);
+    suma(4, 5);
+
+    let b = a*(-1);
+    let c1 = a.sqrt();
+    let d = b.abs();
+    let e = d.clone();
+    let f = b.to_string();
+    let g = "HOLA";
+
 }
 
 fn resta(a:i64, b:i64) -> i64 {
@@ -122,7 +157,7 @@ struct Carro {
 let mut f: &str = "mundo";
 let mut vector = vec![1,2,3,4,5];
 let mut v = vec![0; 10];
-
+let v2 = vec![vec![1; 10],vec![2; 8],vec![3; 15],vec![5; 2],vec![8; 1]];
 let v1: Vec<i64> = Vec::new();
 let mut v2: Vec<&str> = Vec::new();
 let v3: Vec<i64> = Vec::with_capacity(10);
@@ -148,3 +183,70 @@ arr1[1] = "Juanito";
 let mut c = arr3[0][1];
 println!("{}", arr3[1][1][2]);
 println!("{:?}", arr3[1][1]);
+
+
+//pruebas con funciones nativas de vectores
+let mut v = vec![2,4,6,8,10];
+let mut v1: Vec<&str> = Vec::new();
+
+v.insert(2, 5);
+println!("{:?}", v);
+v.push(12);
+println!("{:?}", v);
+v.remove(0);
+println!("{:?}", v);
+
+println!("{}", v.len());
+println!("{}", v.contains(&2));
+
+let mut c = v.remove(3);
+println!("{}", c);
+println!("{:?}", v);
+
+let mut d = v.capacity();
+println!("{}", d);
+
+
+
+
+
+
+
+fn main() {
+    println!("Hola mundo");
+    let mut p1 = Personaje{nombre: "Fernando".to_string(), edad: 18, descripcion: "soy un aragan".to_string() };
+
+}
+
+struct Personaje {
+    nombre: String,
+    edad: i64,
+    descripcion: String
+}
+// Struct
+struct Carro {
+    placa: String,
+    color: String,
+    modelo: String,
+    propierario,
+    anio
+}
+
+
+archivos de pruebas
+intermedio modificaciones
+
+let mut index: f64 = 0.0;
+
+    while (index >= 0.0) {
+
+        if (index == 0.0) {
+            index = index + 100.0;
+        } else if (index > 50.0) {
+            index = index / 2.0 - 25.0;
+            
+        } else {
+            index = (index / 2.0) - 1.0;
+        } 
+        println!("{}",index);
+    }

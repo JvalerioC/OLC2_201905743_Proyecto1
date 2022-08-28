@@ -19,7 +19,7 @@ def procesar_instrucciones(instrucciones, data) :
             elif isinstance(inst, If): procesar_if(inst.condicion, inst.instrucciones, data)
             elif isinstance(inst, If_Else): procesar_if_else(inst.condicion, inst.instrucciones, inst.ielse, data)
             elif isinstance(inst, While): procesar_while(inst.condicion, inst.instrucciones, data)
-            elif isinstance(inst, For): procesar_for(inst.variable, inst.condicion, inst.paso, inst.instrucciones, data)
+            elif isinstance(inst, For): procesar_for(inst.variable, inst.arreglo, inst.inicio, inst.fin, inst.instrucciones, data)
             elif isinstance(inst, Break): procesar_break(inst.expresion, data)
             elif isinstance(inst, Continue): procesar_continue(data)
             elif isinstance(inst, Loop) : procesar_loop(inst.instrucciones, data)
@@ -34,6 +34,9 @@ def procesar_instrucciones(instrucciones, data) :
             elif isinstance(inst, Vinsert): vector_insert(inst.id, inst.posicion, inst.expresion, data)
             elif isinstance(inst, Vpush): vector_push(inst.id, inst.expresion, data)
             elif isinstance(inst, Vremove): vector_remove(inst.id, inst.posicion, data)
+            elif isinstance(inst, LlamadaFuncion): llamada_funcion(inst.id, inst.parametros, data)
+            elif isinstance(inst, Return): procesar_return(inst.expresion, data)
+            elif isinstance(inst, DeclaracionStruct): procesar_declaracion_struct(inst.id, inst.idStruct, inst.campos, inst.mutable, data)
             else :
                 if(isinstance(inst, ExpresionUnaria) or isinstance(inst, ExpresionRelacional) or
                 isinstance(inst, ExpresionPotencia) or isinstance(inst, ExpresionAritmetica) or
@@ -45,6 +48,7 @@ def procesar_instrucciones(instrucciones, data) :
                         data.errores.insertar("La instruccion de expresion no esta dentro de un if", temp_ambito, 0, 0, data.texto)
                         print("No esta dentro del if")
                 else:
+                    print(inst)
                     print('Error: instrucción no válida')
                 
 

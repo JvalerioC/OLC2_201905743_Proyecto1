@@ -11,6 +11,13 @@ class Campo():
         self.tipo = tipo
         self.valor = 0
 
+class Campo2():
+    def __init__(self, nombre, valor):
+        self.nombre = nombre
+        self.tipo = 0
+        self.valor = valor
+
+
 class TablaStruct():
     def __init__(self, structs = []):
         self.structs = structs

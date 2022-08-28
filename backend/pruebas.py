@@ -21,8 +21,17 @@ from xml.etree.ElementInclude import include
 foo = []
 bar = "{:?}"
 print(bar)
-if "{:?}" in bar:
-    print("yes")
+a = 100.0
+
+if a > 50.0:
+    a = a/2 +20
+    print(a)
+
+bar1 = str(bar)
+print(bar, bar1)
 
 print(isinstance(foo, list))
-print(isinstance(bar, str))
+print(False or False)
+
+for i in "hola":
+    print(i)

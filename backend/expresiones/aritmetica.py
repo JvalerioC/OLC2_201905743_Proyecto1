@@ -11,7 +11,11 @@ def aritmetica(r1, r2, op, fila, columna, data):
         res.columna = columna
         return res
     if(tipo1 == "CADENA" and tipo2 == "CADENA"):
-        print("esto es una cadena")
+        res.tipo = "CADENA"
+        res.valor =  r1.valor + r2.valor
+        res.linea = fila
+        res.columna = columna
+        return res
     else:
         if(tipo1 == "ENTERO" or tipo1 == "DECIMAL"):
             if(tipo1 == tipo2):
@@ -21,7 +25,12 @@ def aritmetica(r1, r2, op, fila, columna, data):
                 if op == OPERACION_ARITMETICA.MAS: res.valor = r1.valor + r2.valor
                 elif op == OPERACION_ARITMETICA.MENOS: res.valor = r1.valor - r2.valor
                 elif op == OPERACION_ARITMETICA.POR: res.valor = r1.valor * r2.valor
-                elif op == OPERACION_ARITMETICA.DIVIDIDO: res.valor = r1.valor / r2.valor; res.tipo = "DECIMAL"
+                elif op == OPERACION_ARITMETICA.DIVIDIDO: 
+                    temp_res = r1.valor / r2.valor
+                    if tipo1 == "ENTERO":
+                        res.valor = int(temp_res)
+                    else:
+                        res.valor = temp_res
                 elif op == OPERACION_ARITMETICA.MODULO: res.valor = r1.valor % r2.valor
                 else:
                     res.valor = "error"
@@ -31,7 +40,6 @@ def aritmetica(r1, r2, op, fila, columna, data):
                 res.valor = "error"
                 
         else:
-            print(data.ambito.pila[len(data.ambito.pila)-1].nombre)
             data.errores.insertar("No es posible hacer operacion aritmetica con ID, CHAR, BOOL", data.ambito.pila[len(data.ambito.pila)-1].nombre, fila, columna, data.texto)
             #print("no es posible hacer operacion")
             res.valor = "error"
@@ -47,7 +55,7 @@ def unaria(r1, op, fila, columna, data):
         res.valor = "error"
         return res
     if op == "!":
-        res.tipo == "BOOL"
+        res.tipo = "BOOL"
         res.valor = not r1.valor
     elif op == "-":
         if tipo1 == "ENTERO" or tipo1 == "DECIMAL":

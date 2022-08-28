@@ -63,6 +63,16 @@ class AmbitoTS():
         else:
             simbol = self.pila[0].obtener(id)
             return simbol
+    def obtenerSimboloLlamada(self, id, posicion):
+        simbol = 0
+        if posicion > 0:
+            simbol = self.pila[posicion].obtener(id)
+            if simbol == 0:
+                simbol = self.obtenerSimboloLlamada(id, posicion-1)
+            return simbol
+        else:
+            simbol = self.pila[0].obtener(id)
+            return simbol
     
     def modificarSimbolo(self, simbolo, posicion):
         simbol = 0

@@ -12,7 +12,8 @@ def relacional(r1, r2, op, fila, columna, data):
         res.columna = columna
         return res
     if(tipo1 == tipo2):
-        res.tipo = "bool"
+        #print(op, r1.valor, r2.valor)
+        res.tipo = "BOOL"
         res.linea = fila
         res.columna = columna
         if op == OPERACION_RELACIONAL.IGUAL: res.valor = r1.valor == r2.valor

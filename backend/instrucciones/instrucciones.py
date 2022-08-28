@@ -68,10 +68,11 @@ class While(Instruccion):
 
 class For(Instruccion):
     #clase para la instruccion while
-    def __init__(self, variable, condicion, paso, instrucciones):
+    def __init__(self, variable, arreglo, inicio, fin, instrucciones):
         self.variable = variable
-        self.condicion = condicion
-        self.paso = paso
+        self.arreglo = arreglo
+        self.inicio = inicio
+        self.fin = fin
         self.instrucciones = instrucciones
 
 class Break(Instruccion):
@@ -188,3 +189,22 @@ class Vremove(Instruccion):
     def __init__(self, id, posicion):
         self.id = id
         self.posicion = posicion
+        
+class LlamadaFuncion(Instruccion):
+    #clase para la instruccion llamada a funcion
+    def __init__(self, id, parametros):
+        self.id = id
+        self.parametros = parametros
+
+class Return(Instruccion):
+    #clase para la instruccion retorno
+    def __init__(self, expresion):
+        self.expresion = expresion
+
+class DeclaracionStruct(Instruccion):
+    #clase para la declaracion de struct
+    def __init__(self, id, idStruct, campos, mutable):
+        self.id = id
+        self.idStruct = idStruct
+        self.campos = campos
+        self.mutable = mutable

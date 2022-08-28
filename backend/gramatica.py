@@ -3,6 +3,7 @@ reservadas={
     'i64': 'INT',         #
     'f64': 'FLOAT',       #
     'bool' : 'BOOL',      #
+    'chars' : 'CHARS',    #
     'char' : 'CHAR',      #
     'let' : 'LET',        #
     'mut' : 'MUTABLE',    #
@@ -14,28 +15,30 @@ reservadas={
     'println' : 'PRINT',   #
     'break' : 'BREAK',      #
     'continue' : 'CONTINUE',#
-    'return' : 'RETURN',
+    'return' : 'RETURN',    #
     'loop' : 'LOOP',        #
     'match' : 'MATCH',
     'fn'    : 'FUNCION',    #
-    'struct': 'STRUCT',
-    'mod'   : 'MOD',
-    'abs'   : 'ABS' ,
-    'sqrt'  : 'RAIZ' ,
-    'to_string' : 'TOSTRING' ,
-    'clone' : 'CLONE' ,
-    'new': 'NEW' ,
-    'len'   : 'LEN' ,
-    'push'  : 'PUSH' ,
-    'remove' : 'REMOVE' ,
-    'contains': 'CONTAINS' ,
-    'insert': 'INSERT' ,
-    'capacity': 'CAPACITY' ,
-    'with_capacity': 'WCAPACITY' ,
-    'in' : 'IN',
-    'vec' : 'VECTOR',
-    'Vec' : 'VEC',
-    'String': 'STRING'
+    'struct': 'STRUCT',     #
+    'mod'   : 'MOD',    #
+    'abs'   : 'ABS' ,   #
+    'sqrt'  : 'RAIZ' ,  #
+    'to_string' : 'TOSTRING' , #
+    'clone' : 'CLONE' , #
+    'new': 'NEW' ,  #
+    'len'   : 'LEN' ,   #
+    'push'  : 'PUSH' ,  #
+    'remove' : 'REMOVE' ,   #
+    'contains': 'CONTAINS' ,    #
+    'insert': 'INSERT' ,    #
+    'capacity': 'CAPACITY' ,    #
+    'with_capacity': 'WCAPACITY' ,  #
+    'in' : 'IN',    
+    'vec' : 'VECTOR',   #
+    'Vec' : 'VEC',  #
+    'for'   : 'FOR',
+    'as'    : 'CASTEO',
+    'String': 'STRING'  #
 }
 
 tokens  = [
@@ -73,6 +76,7 @@ tokens  = [
     'CADENA',       #
     'CARACTER',     #
     'STR',
+    'Y',
     'ID'    
 ] + list(reservadas.values())
 
@@ -104,6 +108,7 @@ t_OR            = r'\|\|'
 t_AND           = r'&&'
 t_NOT           = r'!'
 t_STR           = r'&str'
+t_Y             = r'&'
 
 def t_DECIMAL(t):
     r'-?\d+\.\d+'
@@ -158,7 +163,7 @@ def t_error(t):
     t.lexer.skip(1)
 
 # Construyendo el analizador lexico
-from structsG import Campo
+from structsG import Campo, Campo2
 from funcionesG import Parametro
 from instrucciones.instrucciones import *
 from expresiones.expresiones import *
@@ -200,6 +205,7 @@ def p_instruccion(t) :
                         | inst_while
                         | inst_break PTCOMA
                         | inst_continue PTCOMA
+                        | inst_return PTCOMA
                         | inst_loop 
                         | inst_funcion
                         | inst_struct
@@ -208,9 +214,32 @@ def p_instruccion(t) :
                         | inst_declaracion_vector PTCOMA
                         | inst_modificar_arreglo PTCOMA
                         | inst_vector_op PTCOMA
+                        | llamada_funcion PTCOMA
+                        | inst_declaracion_struct PTCOMA
+                        | inst_for 
                         | expresion '''
     t[0] = t[1]
     
+def p_instruccion_for(t):
+    '''inst_for : FOR ID IN ID LLAVEIZQ instrucciones LLAVEDER
+                | FOR ID IN expresion PUNTO PUNTO ID PUNTO LEN PARENTESISIZQ PARENTESISDER LLAVEIZQ instrucciones LLAVEDER
+                | FOR ID IN expresion PUNTO PUNTO expresion LLAVEIZQ instrucciones LLAVEDER
+                | FOR ID IN expresion PUNTO CHARS PARENTESISIZQ PARENTESISDER LLAVEIZQ instrucciones LLAVEDER
+                | FOR ID IN ID PUNTO CHARS PARENTESISIZQ PARENTESISDER LLAVEIZQ instrucciones LLAVEDER
+                | FOR ID IN CORCHETEIZQ lista_expresiones CORCHETEDER LLAVEIZQ instrucciones LLAVEDER'''
+    if len(t) == 8:
+        t[0] = For(t.slice[2], t.slice[4], 0, 0, t[6]) #
+    elif len(t) == 15:
+        t[0] = For(t.slice[2], 0, t[4], t.slice[7], t[13] )
+    elif len(t) == 11:
+        t[0] = For(t.slice[2], 0, t[4], t[7], t[9])
+    elif len(t) == 12:
+        if t.slice[4].type == "ID":
+            t[0] = For(t.slice[2], t.slice[4], 0, 0, t[10]) #
+        else:
+            t[0] = For(t.slice[2], t[4], 0, 0, t[10]) #
+    elif len(t) == 10:
+        t[0] = For(t.slice[2], t[5], 0, 0, t[8]) #
 
 def p_instruccion_imprimir_cadena(t) :
     'inst_imprimir      : PRINT NOT PARENTESISIZQ expresion PARENTESISDER'
@@ -228,6 +257,27 @@ def p_lista_expresiones(t):
 def p_expresiones_expresion(t):
     'lista_expresiones   : expresion'
     t[0] = [t[1]]
+
+def p_instruccion_declaracion_struct(t):
+    '''inst_declaracion_struct  : LET MUTABLE ID ASIGNACION ID LLAVEIZQ campos2 LLAVEDER 
+                                | LET ID ASIGNACION ID LLAVEIZQ campos2 LLAVEDER '''
+    if(len(t) == 9):
+        t[0] = DeclaracionStruct(t.slice[3], t.slice[5], t[7], True)
+    else:
+        t[0] = DeclaracionStruct(t.slice[3], t.slice[5], t[7], False)
+
+def p_lista_campos2(t):
+    'campos2  : campos2 COMA campo2'
+    t[1].append(t[3])
+    t[0] = t[1]
+
+def p_campo_campo2(t):
+    'campos2   : campo2'
+    t[0] = [t[1]]
+
+def p_campo2(t):
+    '''campo2    : ID DOSPUNTOS expresion'''
+    t[0] = Campo2(t.slice[1], t[3])
 
 def p_instruccion_declaracion_mutable(t) :
     '''inst_declaracion : LET MUTABLE ID DOSPUNTOS tipo_dato ASIGNACION expresion
@@ -353,6 +403,23 @@ def p_formav(t):
         
         t[0] = temp
 
+def p_formav2(t):
+    'formav     : CORCHETEIZQ lista_vectores CORCHETEDER'
+    t[0] = t[2]
+
+def p_lista_vectores(t):
+    'lista_vectores  : lista_vectores COMA vector'
+    t[1].append(t[3])
+    t[0] = t[1]
+
+def p_vector_vector(t):
+    'lista_vectores   : vector'
+    t[0] = [t[1]]
+
+def p_vector(t):
+    '''vector   : VECTOR NOT formav'''
+    t[0] = t[3]
+
 def p_modificar_arreglo(t):
     'inst_modificar_arreglo : acceso_vector ASIGNACION expresion'
     t[0] = ModificarArray(t[1], t[3])
@@ -362,12 +429,12 @@ def p_acceso_arreglo(t):
     t[0] = [t.slice[1], t[2]]
 
 def p_lista_acceso(t):
-    'lista_acceso  : lista_acceso CORCHETEIZQ ENTERO CORCHETEDER'
+    'lista_acceso  : lista_acceso CORCHETEIZQ expresion CORCHETEDER'
     t[1].append(t[3])
     t[0] = t[1]
 
 def p_acceso_accesp(t):
-    'lista_acceso  : CORCHETEIZQ ENTERO CORCHETEDER'
+    'lista_acceso  : CORCHETEIZQ expresion CORCHETEDER'
     t[0] = [t[2]]
 
 def p_instruccion_if(t) :
@@ -394,9 +461,17 @@ def p_instruccion_break(t):
     '''inst_break           : BREAK expresion
                             | BREAK'''
     if len(t) == 2:
-        t[0] = Break(None)
+        t[0] = Break(t.slice[1])
     else:
         t[0] = Break(t[2])
+
+def p_instruccion_return(t):
+    '''inst_return      : RETURN expresion
+                        | RETURN '''
+    if len(t) == 2:
+        t[0] = Return(t.slice[1])
+    else:
+        t[0] = Return(t[2])
 
 def p_instruccion_continue(t):
     'inst_continue      : CONTINUE'
@@ -420,6 +495,7 @@ def p_operacion_vector(t):
 #def p_instruccion_match(t):
 #    'inst_match     : MATCH LLAVEIZQ instrucciones LLAVEDER'
 #    print()
+
 def p_instruccion_funcion(t):
     '''inst_funcion     : FUNCION ID PARENTESISIZQ lista_parametros PARENTESISDER LLAVEIZQ instrucciones LLAVEDER 
                         | FUNCION ID PARENTESISIZQ lista_parametros PARENTESISDER MENOS MAYORQUE tipo_dato LLAVEIZQ instrucciones LLAVEDER
@@ -441,6 +517,32 @@ def p_instruccion_struct(t):
 def p_instruccion_mod(t):
     ' inst_mod      : MOD ID LLAVEIZQ instrucciones LLAVEDER'
     t[0] = Modulo(t.slice[2], t[4])
+
+def p_instruccion_llamada(t):
+    '''llamada_funcion      : ID PARENTESISIZQ lista_pasar PARENTESISDER
+                            | ID PARENTESISIZQ PARENTESISDER'''
+    if len(t) == 5:
+        t[0] = LlamadaFuncion(t.slice[1], t[3])
+    else:
+        t[0] = LlamadaFuncion(t.slice[1], None)
+
+def p__lista_pasar(t):
+    '''lista_pasar  : lista_pasar COMA expresion
+                    | lista_pasar COMA Y MUTABLE ID'''
+    if len(t) == 4:
+        t[1].append(t[3])
+        t[0] = t[1]
+    else:
+        t[1].append(ExpresionInicial(t.slice[5]))
+        t[0] = t[1]
+
+def p_pasar_pasar(t):
+    '''lista_pasar  : expresion
+                    | Y MUTABLE ID'''
+    if len(t) == 2:
+        t[0] = [t[1]]
+    else:
+        t[0] = [ExpresionInicial(t.slice[3])]
 
 def p_lista_campos(t):
     'campos  : campos COMA campo'
@@ -469,8 +571,19 @@ def p_parametro_parametro(t):
     t[0] = [t[1]]
 
 def p_parametro(t):
-    'parametro  : ID DOSPUNTOS tipo_dato'
-    t[0] = Parametro(t.slice[1], t[3])
+    '''parametro    : ID DOSPUNTOS tipo_dato
+                    | ID DOSPUNTOS Y MUTABLE CORCHETEIZQ tipo_dato CORCHETEDER
+                    | ID DOSPUNTOS Y MUTABLE VEC MENORQUE tipo_dato MAYORQUE'''
+    if len(t) == 4:
+        t[0] = Parametro(t.slice[1], t[3])
+    elif len(t) == 8:
+        temp = Parametro(t.slice[1], t[6])
+        temp.isReferencia = "A"
+        t[0] = temp
+    else:
+        temp = Parametro(t.slice[1], t[7])
+        temp.isReferencia = "V"
+        t[0] = temp
 
 def p_tipo_dato(t):
     '''tipo_dato        : INT
@@ -543,10 +656,61 @@ def p_expresion(t):
                     | ID '''
     t[0] = ExpresionInicial(t.slice[1])
 
+def p_expresion_casteo(t):
+    '''expresion    : PARENTESISIZQ expresion CASTEO tipo_dato PARENTESISDER'''
+    t[0] = ExpresionCasteo(t[2], t[4])
+
 def p_expresion_acceso_arreglo(t):
     'expresion  : acceso_vector'
     t[0] = ExpresionAcceso(t[1])
 
+def p_expresion_nativas(t):
+    '''expresion    : expresion PUNTO ABS PARENTESISIZQ PARENTESISDER
+                    | ID PUNTO CLONE PARENTESISIZQ PARENTESISDER
+                    | ID PUNTO ABS PARENTESISIZQ PARENTESISDER
+                    | expresion PUNTO RAIZ PARENTESISIZQ PARENTESISDER
+                    | ID PUNTO RAIZ PARENTESISIZQ PARENTESISDER
+                    | expresion PUNTO TOSTRING PARENTESISIZQ PARENTESISDER
+                    | ID PUNTO TOSTRING PARENTESISIZQ PARENTESISDER'''
+    if t[3] == "abs":
+        if t.slice[1].type == "ID":
+            t[0] = ExpresionAbsoluto(ExpresionInicial(t.slice[1]))
+        else:
+            t[0] = ExpresionAbsoluto(t[1])
+    elif t[3] == "clone":
+        t[0] = ExpresionClone(t.slice[1])
+    elif t[3] == "sqrt":
+        if t.slice[1].type == "ID":
+            t[0] = ExpresionRaiz(ExpresionInicial(t.slice[1]))
+        else:
+            t[0] = ExpresionRaiz(t[1])
+    elif t[3] == "to_string":
+        if t.slice[1].type == "ID":
+            t[0] = ExpresionToString(ExpresionInicial(t.slice[1]))
+        else:
+            t[0] = ExpresionToString(t[1])
+
+def p_expresion_vector(t):
+    '''expresion    : ID PUNTO CONTAINS PARENTESISIZQ Y expresion PARENTESISDER
+                    | ID PUNTO LEN PARENTESISIZQ PARENTESISDER
+                    | ID PUNTO REMOVE PARENTESISIZQ ENTERO PARENTESISDER
+                    | ID PUNTO CAPACITY PARENTESISIZQ PARENTESISDER'''
+    if t[3] == "contains":
+        t[0] = ExpresionContains(t.slice[1], t[6])
+    elif t[3] == "remove":
+        t[0] = ExpresionRemove(t.slice[1], t.slice[5])
+    elif t[3] == "len":
+        t[0] = ExpresionLen(t.slice[1])
+    elif t[3] == "capacity":
+        t[0] = ExpresionCapacity(t.slice[1])
+
+def p_expresion_llamada(t):
+    '''expresion    : ID PARENTESISIZQ lista_pasar PARENTESISDER
+                    | ID PARENTESISIZQ PARENTESISDER'''
+    if len(t) == 5:
+        t[0] = ExpresionLlamada(t.slice[1], t[3])
+    else:
+        t[0] = ExpresionLlamada(t.slice[1], None)
 
 
 def p_error(t):
