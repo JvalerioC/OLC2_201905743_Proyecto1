@@ -23,7 +23,6 @@ def procesar_instrucciones(instrucciones, data) :
             elif isinstance(inst, Break): procesar_break(inst.expresion, data)
             elif isinstance(inst, Continue): procesar_continue(data)
             elif isinstance(inst, Loop) : procesar_loop(inst.instrucciones, data)
-            elif isinstance(inst, Funcion): procesar_funcion(inst.nombre, inst.tipo, inst.parametros, inst.instrucciones, data)
             elif isinstance(inst, DeclaracionArreglo): procesar_declaracion_arreglo(inst.nombre, inst.tamanio, inst.expresiones, data)
             elif isinstance(inst, DeclaracionArregloM): procesar_declaracion_arreglo_mutable(inst.nombre, inst.tamanio, inst.expresiones, data)
             elif isinstance(inst, DeclaracionArregloMST): procesar_declaracion_arreglo_mutable_st(inst.nombre, inst.expresiones, data)
@@ -37,6 +36,22 @@ def procesar_instrucciones(instrucciones, data) :
             elif isinstance(inst, LlamadaFuncion): llamada_funcion(inst.id, inst.parametros, data)
             elif isinstance(inst, Return): procesar_return(inst.expresion, data)
             elif isinstance(inst, DeclaracionStruct): procesar_declaracion_struct(inst.id, inst.idStruct, inst.campos, inst.mutable, data)
+            elif isinstance(inst, VpushV): vector_pushV(inst.id, inst.arreglo, data)
+            elif isinstance(inst, ModificarStruct): procesar_modificar_struct(inst.id_atributo, inst.expresion, data)
+            elif isinstance(inst, DeclaracionVectorT): procesar_declaracion_vectorT(inst.id, inst.listamod, data)
+            elif isinstance(inst, AsignacionVectorDB): procesar_asignacion_tabla(inst.nombre, inst.tipo, inst.mutable, inst.capacidad, data)
+            elif isinstance(inst, LlamadaFuncionDB):
+                id = inst.listamod[len(inst.listamod)-1]
+                listamod = inst.listamod[:len(inst.listamod)-1]
+                buscar = 0
+                temp = data.modulos
+                for mod in listamod:
+                    buscar = temp.obtener(mod.value)
+                    if buscar != 0:
+                        temp = buscar.mod
+                #print(id, listamod, inst.parametros, buscar.fn)
+                llamada_funcionDB(id, inst.parametros, buscar.fn, data)
+            elif isinstance(inst, ModificacionAtributo): modificacion_atributoDB(inst.id, inst.posicion, inst.atributo, inst.expresion, data)
             else :
                 if(isinstance(inst, ExpresionUnaria) or isinstance(inst, ExpresionRelacional) or
                 isinstance(inst, ExpresionPotencia) or isinstance(inst, ExpresionAritmetica) or

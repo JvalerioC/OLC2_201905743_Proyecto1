@@ -177,6 +177,12 @@ class Vpush(Instruccion):
         self.id = id
         self.expresion = expresion
 
+class VpushV(Instruccion):
+    #clase para la operacon push con vectores
+    def __init__(self, id, arreglo):
+        self.id = id
+        self.arreglo = arreglo
+
 class Vinsert(Instruccion):
     #clase para la operacion insertar con vectores
     def __init__(self, id, posicion, expresion):
@@ -208,3 +214,41 @@ class DeclaracionStruct(Instruccion):
         self.idStruct = idStruct
         self.campos = campos
         self.mutable = mutable
+
+class ModificarStruct(Instruccion):
+    #clase para la modificacion de un struct
+    def __init__(self, id_atributo, expresion):
+        self.id_atributo = id_atributo
+        self.expresion = expresion
+
+class DeclaracionVectorT(Instruccion):
+    #clase para la declaracion de una tabla Db
+    def __init__(self, id, listamod):
+        self.id = id
+        self.listamod = listamod
+
+class LlamadaFuncionDB(Instruccion):
+    #clase para la llamada de una funcion en db
+    def __init__(self, listamod, parametros):
+        self.listamod = listamod
+        self.parametros = parametros
+
+class ModificacionAtributo(Instruccion):
+    #clase para la modificacion de un atributo o asignacion
+    def __init__(self, acceso, expresion):
+        self.id = acceso[0]
+        self.posicion = acceso[1]
+        self.atributo = acceso[2]
+        self.expresion = expresion
+
+class AsignacionVectorDB(Instruccion):
+    #clase para el inicio de la tabla
+    def __init__(self, nombre, tipo, mutable, capacidad):
+        self.nombre = nombre
+        self.tipo = tipo
+        self.mutable = mutable
+        self.capacidad = capacidad
+
+
+
+##instrucciones de mod

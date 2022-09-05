@@ -1,3 +1,4 @@
+from expresiones.operacion import Operacion
 from ts import Simbolo
 
 
@@ -27,13 +28,28 @@ class AmbitoTS():
         simbol = Simbolo(id, valor, tipoSimbolo, tipoDato, ambito, mutable, linea, columnaF)
         self.pila[len(self.pila)-1].ingresar(simbol)
     
-    def ingresarSimboloV(self, id, valor, tipoSimbolo, tipoDato, ambito, mutable, linea, columna, texto, capacidad):
+    def ingresarSimboloV(self, id, valor, tipoSimbolo, tipoDato, ambito, mutable, linea, columna, texto, capacidad, data):
         columnaF = self.find_column(texto, columna)
         simbol = Simbolo(id, valor, tipoSimbolo, tipoDato, ambito, mutable, linea, columnaF)
         if capacidad == None:
             self.pila[len(self.pila)-1].ingresar(simbol)
         else:
-            simbol.capacidad = capacidad
+            op = Operacion()
+            capacidad1 = op.ejecutar(capacidad, data)
+            simbol.capacidad = capacidad1.valor
+            self.pila[len(self.pila)-1].ingresar(simbol)
+
+    def ingresarSimboloV2(self, id, valor, tipoSimbolo, tipoDato, ambito, mutable, linea, columna, texto, capacidad, values, data):
+        columnaF = self.find_column(texto, columna)
+        simbol = Simbolo(id, valor, tipoSimbolo, tipoDato, ambito, mutable, linea, columnaF)
+        for val in values:
+            simbol.modulo.append(val.value)
+        if capacidad == None:
+            self.pila[len(self.pila)-1].ingresar(simbol)
+        else:
+            op = Operacion()
+            capacidad1 = op.ejecutar(capacidad, data)
+            simbol.capacidad = capacidad1.valor
             self.pila[len(self.pila)-1].ingresar(simbol)
         
 

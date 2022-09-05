@@ -26,11 +26,14 @@ def aritmetica(r1, r2, op, fila, columna, data):
                 elif op == OPERACION_ARITMETICA.MENOS: res.valor = r1.valor - r2.valor
                 elif op == OPERACION_ARITMETICA.POR: res.valor = r1.valor * r2.valor
                 elif op == OPERACION_ARITMETICA.DIVIDIDO: 
-                    temp_res = r1.valor / r2.valor
-                    if tipo1 == "ENTERO":
-                        res.valor = int(temp_res)
+                    if r2.valor == 0:
+                        data.errores.insertar("No es posible la division entre 0", data.ambito.pila[len(data.ambito.pila)-1].nombre, fila, columna, data.texto)
                     else:
-                        res.valor = temp_res
+                        temp_res = r1.valor / r2.valor
+                        if tipo1 == "ENTERO":
+                            res.valor = int(temp_res)
+                        else:
+                            res.valor = temp_res
                 elif op == OPERACION_ARITMETICA.MODULO: res.valor = r1.valor % r2.valor
                 else:
                     res.valor = "error"

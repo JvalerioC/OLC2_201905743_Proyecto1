@@ -12,6 +12,7 @@ class Retorno():
         self.linea = 0
         self.columna = 0
         self.tipoS = "Variable"
+        self.capacidad = None
     
 class Impresion():
     def __init__(self):

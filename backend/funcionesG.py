@@ -1,3 +1,6 @@
+from webbrowser import open_new_tab
+
+
 class Funcion():
     def __init__(self, nombre, tipo, parametros, instrucciones, fila, columna):
         self.nombre = nombre
@@ -58,5 +61,88 @@ class TablaF():
                                 res = 0
                                 break
         return res
+    
+    def generarHTML(self):
+        if(len(self.funciones) == 0):
+            print("no hay funciones a mostrar")
+        else:
+            parte1 = '''<!DOCTYPE html>
+                    <html>
+                    <head>
+                    <style>
+                    body {
+                    background-image: url('https://www.wallpapertip.com/wmimgs/40-405583_high-resolution-white-background-hd.jpg');
+                    background-repeat: no-repeat;
+                    background-attachment: fixed;  
+                    background-size: cover;
+                    }
+                    .footer {
+                    position: absolute;
+                    left: 0;
+                    bottom: 1;
+                    width: 100%;
+                    background-color: #D0D0D0;
+                    color: black;
+                    text-align: left ;
+                    }
+                    table {
+                    font-family: arial, sans-serif;
+                    border-collapse: collapse;
+                    width: 40%;
+                    margin: auto;
+                    }
+                    h2 {
+                        text-align: center;
+                    }
+                    h1 {
+                        text-align: center;
+                    }
+
+                    td, th {
+                    border: 1px solid #dddddd;
+                    text-align: center;
+                    padding: 8px;
+                    }
+
+                    tr:nth-child(even) {
+                    background-color: #dddddd;
+                    }
+                    </style>
+                    </head>
+                    <body>
+
+                    <h1>Funciones Globales</h1>
+
+                    <table >
+                    <tr>
+                        <th>No.</th>
+                        <th>Nombre</th>
+                        <th>Tipo</th>
+                        <th>Linea</th>
+                        <th>Columna</th>
+                    </tr>'''
+            
+            parte2 = ""
+            conteo=1
+            for error in self.funciones:
+                if error.tipo == None:
+                    tipo = "None"
+                else:
+                    tipo = error.tipo
+                parte2+="<tr>\n";
+                parte2+="<td>"+str(conteo)+"</td>\n";
+                parte2+="<td>"+error.nombre+"</td>\n";
+                parte2+="<td>"+tipo+"</td>\n";
+                parte2+="<td>"+str(error.fila)+"</td>\n";
+                parte2+="<td>"+str(error.columna)+"</td>\n";
+                parte2+="</tr>";
+                conteo+=1
+
+            parte3="</table>\n</body>\n</html>";
+
+            file = open("reporteFunciones.html", "w")
+            file.write(parte1+parte2+parte3)
+            file.close()
+            open_new_tab("reporteFunciones.html")
 
     

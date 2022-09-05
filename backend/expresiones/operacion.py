@@ -1,6 +1,5 @@
-from tokenize import String
-from ts import TablaSimbolos
-from instrucciones.instrucciones import Loop, If, If_Else
+from ts import TablaSimbolos, Simbolo
+from instrucciones.instrucciones import Loop, If, If_Else, TamanioTipo
 from expresiones.expresiones import *
 from expresiones.aritmetica import *
 from expresiones.logica import *
@@ -46,19 +45,23 @@ class Operacion():
                     resultado.valor = False
             elif expresion.expresion.type == "ID":
                 simbol = data.ambito.obtenerSimbolo(expresion.expresion.value, data.ambito.longitud()-1)
-                print(expresion.expresion.type, expresion.expresion.value)
                 if simbol == 0:
                     resultado.tipo = "error"
                     resultado.valor = "error"
                 else:
+                    if simbol.capacidad != None:
+                        resultado.capacidad = simbol.capacidad
+
                     resultado.tipo = simbol.tipoDato
                     resultado.valor = simbol.valor
+                    resultado.tipoS = simbol.tipoSimbolo
             else:
                 resultado.tipo = expresion.expresion.type
                 resultado.valor = expresion.expresion.value
             resultado.linea = expresion.expresion.lineno
             resultado.columna = expresion.expresion.lexpos
             return resultado
+        
         elif isinstance(expresion, ExpresionInstruccion):
             resultado = Retorno()
             if isinstance(expresion.instruccion, Loop):  resultado = expresion_loop(expresion.instruccion.instrucciones, data)
@@ -66,6 +69,7 @@ class Operacion():
             elif isinstance(expresion.instruccion, If_Else): resultado = expresion_elif(expresion.instruccion.condicion, expresion.instruccion.instrucciones, expresion.instruccion.ielse, data)
             else: print("la expresion instruccion a buscar no es valida")
             return resultado
+        
         elif isinstance(expresion, ExpresionAcceso): 
             resultado = Retorno()
             simbol = data.ambito.obtenerSimbolo(expresion.id.value, data.ambito.longitud()-1)
@@ -109,7 +113,8 @@ class Operacion():
                 if simbol.tipoSimbolo == "Vector" and simbol.mutable:
                     temp = simbol.valor
                     resultado.tipo = simbol.tipoDato
-                    resultado.valor = temp.pop(expresion.posicion.value)
+                    posicion = self.ejecutar(expresion.posicion, data)
+                    resultado.valor = temp.pop(posicion.valor)
                     simbol.valor = temp
                     data.ambito.modificarSimbolo(simbol, data.ambito.longitud()-1)
                 else:
@@ -287,6 +292,124 @@ class Operacion():
                 data.errores.insertar("el valor a castear no es entero o decimal", temp_ambito, expresion.tipo.lineno, expresion.tipo.lexpos, data.texto)
             return resultado
 
+        elif isinstance(expresion, ExpresionAccesoStruct):
+            buscar = self.ejecutar(ExpresionInicial(expresion.id), data)
+            resultado = devolver_struct(buscar.valor, expresion.atributo)
+            return resultado
+        
+        elif isinstance(expresion, ExpresionLlamadaDB):
+            id = expresion.listamod[len(expresion.listamod)-1]
+            listamod = expresion.listamod[:len(expresion.listamod)-1]
+            buscar = 0
+            temp = data.modulos
+            for mod in listamod:
+                buscar = temp.obtener(mod.value)
+                if buscar != 0:
+                    temp = buscar.mod
+            resultado = expresion_llamadaDB(id, expresion.parametros, buscar.fn, data)
+            return resultado
+
+        elif isinstance(expresion, ExpresionAccesoAtributoDB):
+            resultado = expresion_acceso_atributo(expresion.id, expresion.posicion, expresion.atributo, data)
+            return resultado
+        else:
+            print(expresion, "error expresion desconocida")
+
+        
+
+
+    def ejecutarStruct(self, nombre, campos, data):
+        resultado = Retorno()
+        buscar = data.structs.obtener(nombre.value)
+        if len(buscar.campos) == len(campos):
+            atributos = {} 
+            hubo_error = False
+            for i in range(len(buscar.campos)):
+                if buscar.campos[i].nombre.value == campos[i].nombre.value:
+                    if isinstance(buscar.campos[i].tipo, TamanioTipo) and isinstance(campos[i].valor, list):
+                        temp_a = []
+                        for j in campos[i].valor[0]:
+                            dato1 = self.ejecutar(j, data)
+
+                            if dato1.tipo == tipoDato(buscar.campos[i].tipo.tipo.value):
+                                temp_a.append(dato1.valor)
+
+                            else:
+                                temp_ambito = data.ambito.pila[len(data.ambito.pila)-1].nombre
+                                data.errores.insertar("un dato del array no coinside con el tipo del array", temp_ambito, campos[i].nombre.lineno, campos[i].nombre.lexpos, data.texto)
+                                hubo_error = True
+                                break
+                        if not hubo_error:
+                            hubo_error = False
+                            atributos[campos[i].nombre.value] = temp_a
+
+                    elif buscar.campos[i].tipo.type == "ID":
+                        from structsG import Campo2
+                        if isinstance(campos[i].valor, Campo2):
+                            dato = self.ejecutarStruct(campos[i].valor.nombre, campos[i].valor.valor, data)
+                            atributos[campos[i].nombre.value] = dato.valor
+                        else:
+                            print("no se que hace aqui")
+                    else:
+                        dato = self.ejecutar(campos[i].valor, data)
+                    
+                        if dato.tipo == tipoDato(buscar.campos[i].tipo.value):
+                            atributos[campos[i].nombre.value] = dato.valor
+                        else:
+                            temp_ambito = data.ambito.pila[len(data.ambito.pila)-1].nombre
+                            data.errores.insertar("el tipo del atributo en la declaracion no coincide con el tipo del atributo del struct", temp_ambito, campos[i].nombre.lineno, campos[i].nombre.lexpos, data.texto)
+                            hubo_error = True
+                            break
+                else:
+                    temp_ambito = data.ambito.pila[len(data.ambito.pila)-1].nombre
+                    data.errores.insertar("el nombre del atributo en la declaracion no coincide con el nombre del atributo del struct ", temp_ambito, campos[i].nombre.lineno, campos[i].nombre.lexpos, data.texto)
+                    hubo_error = True
+                    break
+            if not hubo_error and len(atributos) == len(campos):
+                resultado.tipo = nombre.value
+                resultado.valor = atributos
+                resultado.tipoS = "Struct"
+                return resultado
+            else:
+                temp_ambito = data.ambito.pila[len(data.ambito.pila)-1].nombre
+                data.errores.insertar("la cantidad de atributos no cumple", temp_ambito, id.lineno, id.lexpos, data.texto)
+        else:
+            temp_ambito = data.ambito.pila[len(data.ambito.pila)-1].nombre
+            data.errores.insertar("la cantidad de atributos declarados no coincide con la cantidad de atributos del struct", temp_ambito, id.lineno, id.lexpos, data.texto)
+        
+def expresion_acceso_atributo(id, posicion, atributo, data):
+    resultado = Retorno()
+    simbol = data.ambito.obtenerSimbolo(id.value, data.ambito.longitud()-1)
+    if simbol == 0:
+            resultado.tipo = "error"
+            resultado.valor = "error"
+            temp_ambito = data.ambito.pila[len(data.ambito.pila)-1].nombre
+            data.errores.insertar("el id al que se intenta accesar no existe", temp_ambito, id.lineno, id.lexpos, data.texto)
+    else:
+        if simbol.tipoSimbolo == "Arreglo" or simbol.tipoSimbolo == "Vector":
+            try:
+                op = Operacion()
+                dato = op.ejecutar(posicion, data)
+                temp = simbol.valor
+                if dato.tipo == "ENTERO":
+                    temp1 = temp[dato.valor][atributo.value]
+                else:
+                    temp_ambito = data.ambito.pila[len(data.ambito.pila)-1].nombre
+                    data.errores.insertar("el indice del vector no es de tipo entero", temp_ambito, id.lineno, id.lexpos, data.texto)
+                    
+                resultado.valor = temp1
+                resultado.tipo = simbol.tipoDato
+            except:
+                resultado.tipo = "error"
+                resultado.valor = "error"
+                temp_ambito = data.ambito.pila[len(data.ambito.pila)-1].nombre
+                data.errores.insertar("No es posible acceder a esta posicion del vector", temp_ambito, id.lineno, id.lexpos, data.texto)
+        else:
+            resultado.tipo = "error"
+            resultado.valor = "error"
+            temp_ambito = data.ambito.pila[len(data.ambito.pila)-1].nombre
+            data.errores.insertar("el valor del id enviado no coincide con un arreglo o vector", temp_ambito, id.lineno, id.lexpos, data.texto)
+    return resultado
 
 def encontrar_capacidad(arreglo, capacidad):
     temp = ""
@@ -308,6 +431,17 @@ def tipoDatoE(expresion):
     elif isinstance(expresion, bool): return "BOOL"
     else:
         return "error"
+
+def devolver_struct(valor, atributo):
+    resultado = Retorno()
+    if len(atributo) > 1:
+        resultado = devolver_struct(valor[atributo[0].value], atributo[1:])
+    else:
+        resultado.valor = valor[atributo[0].value]
+        resultado.tipo = tipoDatoE(resultado.valor)
+        resultado.linea = atributo[0].lineno
+        resultado.columna = atributo[0].lexpos
+    return resultado
 
 def expresion_llamada(id, parametros, data):
     resultado = Retorno()
@@ -338,20 +472,31 @@ def expresion_llamada(id, parametros, data):
             new_ts = TablaSimbolos()
             new_ts.nombre = buscar.nombre
             new_ts.isFuncion = True
-            data.ambito.ingresar(new_ts)
+            
             op = Operacion()
             hubo_error = False
             for i in range(len(parametros)):
-                param = data.ambito.obtenerSimboloLlamada(parametros[i].expresion.value, data.ambito.longitud()-1)
-                if (tipoDato(buscar.parametros[i].tipo.value)) == param.tipoDato:
+                tipo_param = 0
+                if isinstance(parametros[i], ExpresionInicial) and parametros[i].expresion.type == "ID":
+                    param = data.ambito.obtenerSimboloLlamada(parametros[i].expresion.value, data.ambito.longitud()-1)
+                    tipo_param = param.tipoDato
+                else:
+                    param = op.ejecutar(parametros[i], data)
+                    tipo_param = param.tipo
+                if (tipoDato(buscar.parametros[i].tipo.value)) == tipo_param:
                     if buscar.parametros[i].isReferencia == "V":
                         tipoS = "Vector"
                     elif buscar.parametros[i].isReferencia == "A":
                         tipoS = "Arreglo"
                     else:
                         tipoS = "Variable"
-                    temp_ambito = data.ambito.pila[len(data.ambito.pila)-1].nombre
-                    data.ambito.ingresarSimbolo(buscar.parametros[i].id.value, param.valor, tipoS, param.tipoDato, temp_ambito, True, id.lineno, id.lexpos, data.texto)
+                        
+                    columnaF = find_column(data.texto, id.lexpos)
+                    temp_ambito = buscar.nombre
+                    simbol = Simbolo(buscar.parametros[i].id.value, param.valor, tipoS, tipo_param, temp_ambito, True, id.lineno, columnaF)
+                    if param.capacidad != None:
+                        simbol.capacidad = param.capacidad
+                    new_ts.ingresar(simbol)
                 else:
                     temp_ambito = data.ambito.pila[len(data.ambito.pila)-1].nombre
                     data.errores.insertar("un parametro no coincide con el tipo de los parametros de la funcion", temp_ambito, id.lineno, id.lexpos, data.texto)
@@ -361,6 +506,7 @@ def expresion_llamada(id, parametros, data):
                 resultado.tipo = "error"
                 resultado.valor = "error"
             else:
+                data.ambito.ingresar(new_ts)
                 procesar_instrucciones(buscar.instrucciones, data)
                 if data.ambito.pila[data.ambito.longitud()-1].retorno == None:
                     temp_ambito = data.ambito.pila[len(data.ambito.pila)-1].nombre
@@ -369,7 +515,82 @@ def expresion_llamada(id, parametros, data):
                     resultado.tipo = "error"
                 else:
                     resultado = data.ambito.pila[data.ambito.longitud()-1].retorno
+                data.ambito.eliminar()
+    return resultado
+
+def expresion_llamadaDB(id, parametros, lfunciones, data):
+    resultado = Retorno()
+    resultado.linea = id.lineno
+    buscar = lfunciones.obtener(id.value)
+    if buscar == 0:
+        temp_ambito = data.ambito.pila[len(data.ambito.pila)-1].nombre
+        data.errores.insertar("la funcion no existe existe", temp_ambito, id.lineno, id.lexpos, data.texto)
+        resultado.tipo = "error"
+        resultado.valor = "error"
+    else:
+        if parametros == None:
+            from interprete import procesar_instrucciones
+            new_ts = TablaSimbolos()
+            new_ts.nombre = buscar.nombre
+            data.ambito.ingresar(new_ts)
+            procesar_instrucciones(buscar.instrucciones, data)
+            if data.ambito.pila[data.ambito.longitud()-1].retorno == None:
+                temp_ambito = data.ambito.pila[len(data.ambito.pila)-1].nombre
+                data.errores.insertar("la funcion no cuenta con un valor de retorno", temp_ambito, id.lineno, id.lexpos, data.texto)
+                resultado.valor ="error"
+                resultado.tipo = "error"
+            else:
+                resultado = data.ambito.pila[data.ambito.longitud()-1].retorno
             data.ambito.eliminar()
+        else:
+            from interprete import procesar_instrucciones
+            new_ts = TablaSimbolos()
+            new_ts.nombre = buscar.nombre
+            new_ts.isFuncion = True
+            
+            op = Operacion()
+            hubo_error = False
+            for i in range(len(parametros)):
+                tipo_param = 0
+                if isinstance(parametros[i], ExpresionInicial) and parametros[i].expresion.type == "ID":
+                    param = data.ambito.obtenerSimboloLlamada(parametros[i].expresion.value, data.ambito.longitud()-1)
+                    tipo_param = param.tipoDato
+                else:
+                    param = op.ejecutar(parametros[i], data)
+                    tipo_param = param.tipo
+                if (tipoDato(buscar.parametros[i].tipo.value)) == tipo_param:
+                    if buscar.parametros[i].isReferencia == "V":
+                        tipoS = "Vector"
+                    elif buscar.parametros[i].isReferencia == "A":
+                        tipoS = "Arreglo"
+                    else:
+                        tipoS = "Variable"
+                        
+                    columnaF = find_column(data.texto, id.lexpos)
+                    temp_ambito = buscar.nombre
+                    simbol = Simbolo(buscar.parametros[i].id.value, param.valor, tipoS, tipo_param, temp_ambito, True, id.lineno, columnaF)
+                    if param.capacidad != None:
+                        simbol.capacidad = param.capacidad
+                    new_ts.ingresar(simbol)
+                else:
+                    temp_ambito = data.ambito.pila[len(data.ambito.pila)-1].nombre
+                    data.errores.insertar("un parametro no coincide con el tipo de los parametros de la funcion", temp_ambito, id.lineno, id.lexpos, data.texto)
+                    hubo_error = True
+                    break
+            if hubo_error:
+                resultado.tipo = "error"
+                resultado.valor = "error"
+            else:
+                data.ambito.ingresar(new_ts)
+                procesar_instrucciones(buscar.instrucciones, data)
+                if data.ambito.pila[data.ambito.longitud()-1].retorno == None:
+                    temp_ambito = data.ambito.pila[len(data.ambito.pila)-1].nombre
+                    data.errores.insertar("la funcion no cuenta con un valor de retorno", temp_ambito, id.lineno, id.lexpos, data.texto)
+                    resultado.valor ="error"
+                    resultado.tipo = "error"
+                else:
+                    resultado = data.ambito.pila[data.ambito.longitud()-1].retorno
+                data.ambito.eliminar()
     return resultado
 
 def expresion_loop(instrucciones, data):
@@ -395,6 +616,7 @@ def tipoDato(dato):
     if dato == "bool": return "BOOL"
     if dato == "char": return "CARACTER"
     if (dato == "String" or dato == "&str"): return "CADENA"
+    else: return dato
 
 def expresion_if(condicion, instrucciones, data):
     op = Operacion()
@@ -436,3 +658,7 @@ def expresion_elif(condicion, instrucciones, ielse, data):
             resultado = data.ambito.pila[data.ambito.longitud()-1].retorno
             data.ambito.eliminar()
         return resultado
+
+def find_column(input, pos): 
+        line_start = input.rfind('\n', 0, pos) + 1 
+        return (pos - line_start) + 1

@@ -13,6 +13,7 @@ class Simbolo():
         self.linea = linea
         self.columna = columna
         self.capacidad = None
+        self.modulo = []
 
 class TablaSimbolos():
     def __init__(self):
@@ -115,7 +116,7 @@ class TablaSimbolos():
                 <tr>
                     <th>No.</th>
                     <th>Identificador</th>
-                    <th>Valor</th>
+                    <th> Valor </th>
                     <th>Tipo Simbolo</th>
                     <th>Tipo Dato</th>
                     <th>Mutable</th>

@@ -76,6 +76,11 @@ class ExpresionAcceso(Expresion):
         self.id = acceso[0]
         self.acceso = acceso[1]
 
+class ExpresionAccesoStruct(Expresion):
+    #clase para la expresion de acceso a struct
+    def __init__(self, acceso):
+        self.id = acceso[0]
+        self.atributo = acceso[1:]
 class ExpresionRemove(Expresion):
     #clase para la expresion remove (vector)
     def __init__(self, id, posicion):
@@ -129,3 +134,16 @@ class ExpresionCasteo(Expresion):
     def __init__(self, expresion, tipo):
         self.expresion = expresion
         self.tipo = tipo
+
+class ExpresionLlamadaDB(Expresion):
+    #clase para la llamada a funcion de DB
+    def __init__(self, listamod, parametros):
+        self.listamod = listamod
+        self.parametros = parametros
+
+class ExpresionAccesoAtributoDB(Expresion):
+    #clase para el acceso a un atributo de una tabla
+    def __init__(self, acceso):
+        self.id = acceso[0]
+        self.posicion = acceso[1]
+        self.atributo = acceso[2]
